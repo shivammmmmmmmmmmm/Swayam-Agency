@@ -91,7 +91,7 @@ export function Footer() {
         </div>
 
         <div className="mt-10 flex flex-col gap-4 border-t border-border pt-6 text-xs font-semibold text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-          <p>&copy; {new Date().getFullYear()} Swayam Agency. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Created by Shivam Bhalerao. All rights reserved.</p>
           <p>GST: 27ASQPP9608M1ZQ · Lic: MH LAT 467124, 20B 467123</p>
         </div>
       </div>
