@@ -1,13 +1,13 @@
 'use server'
 
-import { db } from '@/lib/db'
 import { addresses } from '@/lib/db/schema'
 import { eq, and } from 'drizzle-orm'
-import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 
 async function getUserId() {
+  const { getAuthInstance } = await import('@/lib/auth')
+  const auth = await getAuthInstance()
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session?.user) throw new Error('Unauthorized')
   return session.user.id
@@ -15,6 +15,8 @@ async function getUserId() {
 
 export async function getAddresses() {
   try {
+    const { getDb } = await import('@/lib/db')
+    const db = getDb()
     const userId = await getUserId()
     const result = await db
       .select()
@@ -31,6 +33,8 @@ export async function getAddresses() {
 
 export async function getAddressById(id: number) {
   try {
+    const { getDb } = await import('@/lib/db')
+    const db = getDb()
     const userId = await getUserId()
     const result = await db
       .select()
@@ -56,6 +60,8 @@ export async function createAddress(data: {
   isDefault?: boolean
 }) {
   try {
+    const { getDb } = await import('@/lib/db')
+    const db = getDb()
     const userId = await getUserId()
 
     // If setting as default, unset other defaults
@@ -98,6 +104,8 @@ export async function updateAddress(
   }
 ) {
   try {
+    const { getDb } = await import('@/lib/db')
+    const db = getDb()
     const userId = await getUserId()
 
     // Verify address belongs to user
@@ -138,6 +146,8 @@ export async function updateAddress(
 
 export async function deleteAddress(id: number) {
   try {
+    const { getDb } = await import('@/lib/db')
+    const db = getDb()
     const userId = await getUserId()
 
     // Verify address belongs to user
@@ -163,6 +173,8 @@ export async function deleteAddress(id: number) {
 
 export async function getDefaultAddress() {
   try {
+    const { getDb } = await import('@/lib/db')
+    const db = getDb()
     const userId = await getUserId()
     const result = await db
       .select()

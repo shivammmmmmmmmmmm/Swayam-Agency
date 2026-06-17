@@ -1,12 +1,13 @@
 'use server'
 
-import { db } from '@/lib/db'
+import { getDb } from '@/lib/db'
+import { getAuthInstance } from '@/lib/auth'
 import { orders, orderItems } from '@/lib/db/schema'
 import { eq, desc } from 'drizzle-orm'
-import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
 
 async function getUserId() {
+  const auth = await getAuthInstance()
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session?.user) throw new Error('Unauthorized')
   return session.user.id
@@ -26,6 +27,7 @@ export async function createOrder(data: {
   notes?: string
 }) {
   try {
+    const db = getDb()
     const userId = await getUserId()
     const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substring(7)}`
     const totalAmount = data.subtotal + data.tax + data.shipping
@@ -46,7 +48,6 @@ export async function createOrder(data: {
       })
       .returning()
 
-    // Create order items
     for (const item of data.items) {
       await db.insert(orderItems).values({
         orderId: order.id,
@@ -65,6 +66,7 @@ export async function createOrder(data: {
 
 export async function getOrders() {
   try {
+    const db = getDb()
     const userId = await getUserId()
     const result = await db
       .select()
@@ -81,6 +83,7 @@ export async function getOrders() {
 
 export async function getOrderById(orderId: number) {
   try {
+    const db = getDb()
     const userId = await getUserId()
     const [order] = await db
       .select()
@@ -102,6 +105,7 @@ export async function getOrderById(orderId: number) {
 
 export async function updateOrderPaymentStatus(orderId: number, paymentStatus: string) {
   try {
+    const db = getDb()
     const userId = await getUserId()
     const [order] = await db.select().from(orders).where(eq(orders.id, orderId))
 

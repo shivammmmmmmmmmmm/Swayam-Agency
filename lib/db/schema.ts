@@ -1,5 +1,6 @@
 import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core'
 import { index } from 'drizzle-orm/sqlite-core'
+import { sql } from 'drizzle-orm'
 
 // --- Better Auth required tables -------------------------------------------
 // Column names are camelCase to match Better Auth's defaults. Do not rename.
@@ -10,16 +11,16 @@ export const user = sqliteTable('user', {
   email: text('email').notNull().unique(),
   emailVerified: integer('emailVerified', { mode: 'boolean' }).notNull().default(false),
   image: text('image'),
-  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
-  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 })
 
 export const session = sqliteTable('session', {
   id: text('id').primaryKey(),
   expiresAt: integer('expiresAt', { mode: 'timestamp' }).notNull(),
   token: text('token').notNull().unique(),
-  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
-  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
   ipAddress: text('ipAddress'),
   userAgent: text('userAgent'),
   userId: text('userId')
@@ -41,8 +42,8 @@ export const account = sqliteTable('account', {
   refreshTokenExpiresAt: integer('refreshTokenExpiresAt', { mode: 'timestamp' }),
   scope: text('scope'),
   password: text('password'),
-  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
-  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 })
 
 export const verification = sqliteTable('verification', {
@@ -50,8 +51,8 @@ export const verification = sqliteTable('verification', {
   identifier: text('identifier').notNull(),
   value: text('value').notNull(),
   expiresAt: integer('expiresAt', { mode: 'timestamp' }).notNull(),
-  createdAt: integer('createdAt', { mode: 'timestamp' }),
-  updatedAt: integer('updatedAt', { mode: 'timestamp' }),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).default(sql`(unixepoch())`),
 })
 
 // --- App tables for Swayam Agency E-Commerce --------------------------------
@@ -63,7 +64,7 @@ export const categories = sqliteTable('categories', {
   description: text('description'),
   image: text('image'),
   slug: text('slug').notNull().unique(),
-  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 }, (table) => ({
   slugIdx: index('categories_slug_idx').on(table.slug),
 }))
@@ -80,8 +81,8 @@ export const products = sqliteTable('products', {
   specification: text('specification'),
   slug: text('slug').notNull().unique(),
   featured: integer('featured', { mode: 'boolean' }).notNull().default(false),
-  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
-  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 }, (table) => ({
   categoryIdIdx: index('products_category_id_idx').on(table.categoryId),
   slugIdx: index('products_slug_idx').on(table.slug),
@@ -92,7 +93,7 @@ export const wishlist = sqliteTable('wishlist', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   userId: text('userId').notNull(),
   productId: integer('productId').notNull(),
-  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 }, (table) => ({
   userIdIdx: index('wishlist_user_id_idx').on(table.userId),
   productIdIdx: index('wishlist_product_id_idx').on(table.productId),
@@ -110,8 +111,8 @@ export const addresses = sqliteTable('addresses', {
   postalCode: text('postalCode').notNull(),
   country: text('country').notNull().default('India'),
   isDefault: integer('isDefault', { mode: 'boolean' }).notNull().default(false),
-  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
-  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 }, (table) => ({
   userIdIdx: index('addresses_user_id_idx').on(table.userId),
 }))
@@ -132,8 +133,8 @@ export const orders = sqliteTable('orders', {
   stripeSessionId: text('stripeSessionId'),
   whatsappSent: integer('whatsappSent', { mode: 'boolean' }).notNull().default(false),
   whatsappAdminSent: integer('whatsappAdminSent', { mode: 'boolean' }).notNull().default(false),
-  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
-  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 }, (table) => ({
   userIdIdx: index('orders_user_id_idx').on(table.userId),
   statusIdx: index('orders_status_idx').on(table.status),
@@ -147,7 +148,7 @@ export const orderItems = sqliteTable('orderItems', {
   productId: integer('productId').notNull(),
   quantity: integer('quantity').notNull(),
   price: real('price').notNull(),
-  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 }, (table) => ({
   orderIdIdx: index('order_items_order_id_idx').on(table.orderId),
   productIdIdx: index('order_items_product_id_idx').on(table.productId),
@@ -161,7 +162,7 @@ export const inventory = sqliteTable('inventory', {
   lowStockThreshold: integer('lowStockThreshold').notNull().default(10),
   reorderQuantity: integer('reorderQuantity').notNull().default(50),
   lastRestockDate: integer('lastRestockDate', { mode: 'timestamp' }),
-  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 }, (table) => ({
   productIdIdx: index('inventory_product_id_idx').on(table.productId),
 }))

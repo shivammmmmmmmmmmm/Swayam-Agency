@@ -1,18 +1,20 @@
 'use server'
 
-import { db } from '@/lib/db'
+import { getDb } from '@/lib/db'
+import { getAuthInstance } from '@/lib/auth'
 import { products, categories, wishlist } from '@/lib/db/schema'
 import { eq, ilike, and, desc, asc } from 'drizzle-orm'
-import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
 
 async function getUserId() {
+  const auth = await getAuthInstance()
   const session = await auth.api.getSession({ headers: await headers() })
   return session?.user?.id
 }
 
 export async function getCategories() {
   try {
+    const db = getDb()
     const result = await db.select().from(categories).orderBy(asc(categories.name))
     return { success: true, data: result }
   } catch (error) {
@@ -27,6 +29,7 @@ export async function getProducts(
   page: number = 1
 ) {
   try {
+    const db = getDb()
     const pageSize = 12
     const offset = (page - 1) * pageSize
 
@@ -79,6 +82,7 @@ export async function getProducts(
 
 export async function getProductBySlug(slug: string) {
   try {
+    const db = getDb()
     const result = await db.select().from(products).where(eq(products.slug, slug)).limit(1)
     return { success: true, data: result[0] || null }
   } catch (error) {
@@ -93,6 +97,8 @@ export async function toggleWishlist(productId: number) {
     if (!userId) {
       return { success: false, error: 'Not authenticated' }
     }
+
+    const db = getDb()
 
     const existing = await db
       .select()
@@ -122,6 +128,8 @@ export async function getWishlistItems() {
       return { success: true, data: [] }
     }
 
+    const db = getDb()
+
     const wishlistItems = await db
       .select({ productId: wishlist.productId })
       .from(wishlist)
@@ -140,6 +148,8 @@ export async function getWishlistProducts() {
     if (!userId) {
       return { success: true, data: [] }
     }
+
+    const db = getDb()
 
     const result = await db
       .select({ product: products })
