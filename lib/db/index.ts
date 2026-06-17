@@ -1,9 +1,14 @@
-import { drizzle } from 'drizzle-orm/node-postgres'
-import { Pool } from 'pg'
+import { drizzle } from 'drizzle-orm/better-sqlite3'
+import Database from 'better-sqlite3'
 import * as schema from './schema'
+import path from 'path'
 
-export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-})
+const sqliteDb = new Database(path.join(process.cwd(), 'swayam.db'))
 
-export const db = drizzle(pool, { schema })
+// Enable WAL mode for better concurrent performance
+sqliteDb.pragma('journal_mode = WAL')
+// Enable foreign keys
+sqliteDb.pragma('foreign_keys = ON')
+
+export const db = drizzle(sqliteDb, { schema })
+export const sqlite = sqliteDb

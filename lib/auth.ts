@@ -1,8 +1,17 @@
 import { betterAuth } from 'better-auth'
-import { pool } from '@/lib/db'
+import { drizzleAdapter } from 'better-auth/adapters/drizzle'
+import { db } from '@/lib/db'
+import * as schema from '@/lib/db/schema'
+
+const DEMO_ALLOW_SIGNUP =
+  process.env.DEMO_ALLOW_SIGNUP === 'true' || process.env.NODE_ENV === 'development'
 
 export const auth = betterAuth({
-  database: pool,
+  database: drizzleAdapter(db, {
+    provider: 'sqlite',
+    schema,
+  }),
+
   baseURL:
     process.env.BETTER_AUTH_URL ??
     (process.env.VERCEL_PROJECT_PRODUCTION_URL
@@ -14,6 +23,10 @@ export const auth = betterAuth({
     enabled: true,
     autoSignIn: true,
   },
+
+  // Demo mode: allow signup for everyone
+  ...(DEMO_ALLOW_SIGNUP ? { signUp: { enabled: true } } : { signUp: { enabled: true } }),
+
   trustedOrigins: [
     ...(process.env.V0_RUNTIME_URL ? [process.env.V0_RUNTIME_URL] : []),
     ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),

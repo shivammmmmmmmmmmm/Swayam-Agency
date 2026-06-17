@@ -1,24 +1,25 @@
-import { pgTable, text, timestamp, boolean, serial, integer, decimal, varchar, index } from 'drizzle-orm/pg-core'
+import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core'
+import { index } from 'drizzle-orm/sqlite-core'
 
 // --- Better Auth required tables -------------------------------------------
 // Column names are camelCase to match Better Auth's defaults. Do not rename.
 
-export const user = pgTable('user', {
+export const user = sqliteTable('user', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   email: text('email').notNull().unique(),
-  emailVerified: boolean('emailVerified').notNull().default(false),
+  emailVerified: integer('emailVerified', { mode: 'boolean' }).notNull().default(false),
   image: text('image'),
-  createdAt: timestamp('createdAt').notNull().defaultNow(),
-  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
 })
 
-export const session = pgTable('session', {
+export const session = sqliteTable('session', {
   id: text('id').primaryKey(),
-  expiresAt: timestamp('expiresAt').notNull(),
+  expiresAt: integer('expiresAt', { mode: 'timestamp' }).notNull(),
   token: text('token').notNull().unique(),
-  createdAt: timestamp('createdAt').notNull().defaultNow(),
-  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
   ipAddress: text('ipAddress'),
   userAgent: text('userAgent'),
   userId: text('userId')
@@ -26,7 +27,7 @@ export const session = pgTable('session', {
     .references(() => user.id, { onDelete: 'cascade' }),
 })
 
-export const account = pgTable('account', {
+export const account = sqliteTable('account', {
   id: text('id').primaryKey(),
   accountId: text('accountId').notNull(),
   providerId: text('providerId').notNull(),
@@ -36,103 +37,103 @@ export const account = pgTable('account', {
   accessToken: text('accessToken'),
   refreshToken: text('refreshToken'),
   idToken: text('idToken'),
-  accessTokenExpiresAt: timestamp('accessTokenExpiresAt'),
-  refreshTokenExpiresAt: timestamp('refreshTokenExpiresAt'),
+  accessTokenExpiresAt: integer('accessTokenExpiresAt', { mode: 'timestamp' }),
+  refreshTokenExpiresAt: integer('refreshTokenExpiresAt', { mode: 'timestamp' }),
   scope: text('scope'),
   password: text('password'),
-  createdAt: timestamp('createdAt').notNull().defaultNow(),
-  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
 })
 
-export const verification = pgTable('verification', {
+export const verification = sqliteTable('verification', {
   id: text('id').primaryKey(),
   identifier: text('identifier').notNull(),
   value: text('value').notNull(),
-  expiresAt: timestamp('expiresAt').notNull(),
-  createdAt: timestamp('createdAt').defaultNow(),
-  updatedAt: timestamp('updatedAt').defaultNow(),
+  expiresAt: integer('expiresAt', { mode: 'timestamp' }).notNull(),
+  createdAt: integer('createdAt', { mode: 'timestamp' }),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }),
 })
 
 // --- App tables for Swayam Agency E-Commerce --------------------------------
 
 // Categories for medical instruments
-export const categories = pgTable('categories', {
-  id: serial('id').primaryKey(),
-  name: varchar('name', { length: 100 }).notNull(),
+export const categories = sqliteTable('categories', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull(),
   description: text('description'),
   image: text('image'),
-  slug: varchar('slug', { length: 100 }).notNull().unique(),
-  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  slug: text('slug').notNull().unique(),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
 }, (table) => ({
   slugIdx: index('categories_slug_idx').on(table.slug),
 }))
 
 // Products - medical instruments
-export const products = pgTable('products', {
-  id: serial('id').primaryKey(),
-  name: varchar('name', { length: 255 }).notNull(),
+export const products = sqliteTable('products', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull(),
   description: text('description'),
   categoryId: integer('categoryId').notNull(),
-  price: decimal('price', { precision: 10, scale: 2 }).notNull(),
+  price: real('price').notNull(),
   stock: integer('stock').notNull().default(0),
   image: text('image'),
   specification: text('specification'),
-  slug: varchar('slug', { length: 255 }).notNull().unique(),
-  featured: boolean('featured').notNull().default(false),
-  createdAt: timestamp('createdAt').notNull().defaultNow(),
-  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+  slug: text('slug').notNull().unique(),
+  featured: integer('featured', { mode: 'boolean' }).notNull().default(false),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
 }, (table) => ({
   categoryIdIdx: index('products_category_id_idx').on(table.categoryId),
   slugIdx: index('products_slug_idx').on(table.slug),
 }))
 
 // Wishlist
-export const wishlist = pgTable('wishlist', {
-  id: serial('id').primaryKey(),
+export const wishlist = sqliteTable('wishlist', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
   userId: text('userId').notNull(),
   productId: integer('productId').notNull(),
-  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
 }, (table) => ({
   userIdIdx: index('wishlist_user_id_idx').on(table.userId),
   productIdIdx: index('wishlist_product_id_idx').on(table.productId),
 }))
 
 // Addresses
-export const addresses = pgTable('addresses', {
-  id: serial('id').primaryKey(),
+export const addresses = sqliteTable('addresses', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
   userId: text('userId').notNull(),
-  fullName: varchar('fullName', { length: 255 }).notNull(),
-  phone: varchar('phone', { length: 20 }).notNull(),
+  fullName: text('fullName').notNull(),
+  phone: text('phone').notNull(),
   street: text('street').notNull(),
-  city: varchar('city', { length: 100 }).notNull(),
-  state: varchar('state', { length: 100 }).notNull(),
-  postalCode: varchar('postalCode', { length: 20 }).notNull(),
-  country: varchar('country', { length: 100 }).notNull().default('India'),
-  isDefault: boolean('isDefault').notNull().default(false),
-  createdAt: timestamp('createdAt').notNull().defaultNow(),
-  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+  city: text('city').notNull(),
+  state: text('state').notNull(),
+  postalCode: text('postalCode').notNull(),
+  country: text('country').notNull().default('India'),
+  isDefault: integer('isDefault', { mode: 'boolean' }).notNull().default(false),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
 }, (table) => ({
   userIdIdx: index('addresses_user_id_idx').on(table.userId),
 }))
 
 // Orders
-export const orders = pgTable('orders', {
-  id: serial('id').primaryKey(),
+export const orders = sqliteTable('orders', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
   userId: text('userId').notNull(),
-  orderNumber: varchar('orderNumber', { length: 50 }).notNull().unique(),
-  status: varchar('status', { length: 50 }).notNull().default('pending'),
-  paymentMethod: varchar('paymentMethod', { length: 50 }).notNull(), // 'stripe' or 'cod'
-  paymentStatus: varchar('paymentStatus', { length: 50 }).notNull().default('pending'),
-  totalAmount: decimal('totalAmount', { precision: 10, scale: 2 }).notNull(),
-  taxAmount: decimal('taxAmount', { precision: 10, scale: 2 }).notNull().default('0'),
-  shippingAmount: decimal('shippingAmount', { precision: 10, scale: 2 }).notNull().default('0'),
+  orderNumber: text('orderNumber').notNull().unique(),
+  status: text('status').notNull().default('pending'),
+  paymentMethod: text('paymentMethod').notNull(), // 'stripe' or 'cod'
+  paymentStatus: text('paymentStatus').notNull().default('pending'),
+  totalAmount: real('totalAmount').notNull(),
+  taxAmount: real('taxAmount').notNull().default(0),
+  shippingAmount: real('shippingAmount').notNull().default(0),
   addressId: integer('addressId').notNull(),
   notes: text('notes'),
-  stripeSessionId: varchar('stripeSessionId', { length: 255 }),
-  whatsappSent: boolean('whatsappSent').notNull().default(false),
-  whatsappAdminSent: boolean('whatsappAdminSent').notNull().default(false),
-  createdAt: timestamp('createdAt').notNull().defaultNow(),
-  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+  stripeSessionId: text('stripeSessionId'),
+  whatsappSent: integer('whatsappSent', { mode: 'boolean' }).notNull().default(false),
+  whatsappAdminSent: integer('whatsappAdminSent', { mode: 'boolean' }).notNull().default(false),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
 }, (table) => ({
   userIdIdx: index('orders_user_id_idx').on(table.userId),
   statusIdx: index('orders_status_idx').on(table.status),
@@ -140,27 +141,27 @@ export const orders = pgTable('orders', {
 }))
 
 // Order Items
-export const orderItems = pgTable('orderItems', {
-  id: serial('id').primaryKey(),
+export const orderItems = sqliteTable('orderItems', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
   orderId: integer('orderId').notNull(),
   productId: integer('productId').notNull(),
   quantity: integer('quantity').notNull(),
-  price: decimal('price', { precision: 10, scale: 2 }).notNull(),
-  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  price: real('price').notNull(),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
 }, (table) => ({
   orderIdIdx: index('order_items_order_id_idx').on(table.orderId),
   productIdIdx: index('order_items_product_id_idx').on(table.productId),
 }))
 
 // Inventory tracking for stock alerts
-export const inventory = pgTable('inventory', {
-  id: serial('id').primaryKey(),
+export const inventory = sqliteTable('inventory', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
   productId: integer('productId').notNull().unique(),
   currentStock: integer('currentStock').notNull().default(0),
   lowStockThreshold: integer('lowStockThreshold').notNull().default(10),
   reorderQuantity: integer('reorderQuantity').notNull().default(50),
-  lastRestockDate: timestamp('lastRestockDate'),
-  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+  lastRestockDate: integer('lastRestockDate', { mode: 'timestamp' }),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
 }, (table) => ({
   productIdIdx: index('inventory_product_id_idx').on(table.productId),
 }))

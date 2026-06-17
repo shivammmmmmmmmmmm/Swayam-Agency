@@ -25,16 +25,34 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
     setError(null)
     setLoading(true)
 
-    const { error } = isSignUp
+    const result = isSignUp
       ? await authClient.signUp.email({ email, password, name })
       : await authClient.signIn.email({ email, password })
+
+    const { error } = result
+
 
     setLoading(false)
 
     if (error) {
-      setError(error.message ?? 'Something went wrong')
+      const details =
+        // better-auth errors often include more than just message
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (error as any)?.code ||
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (error as any)?.cause ||
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (error as any)?.status
+
+      setError(
+        details
+          ? `Unable to create account: ${error.message ?? 'Something went wrong'} (${String(details)})`
+          : `Unable to create account: ${error.message ?? 'Something went wrong'}`
+      )
+      console.error('AuthForm error:', error)
       return
     }
+
 
     router.push('/')
     router.refresh()
