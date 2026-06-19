@@ -27,14 +27,14 @@ export function ProductCatalog() {
         ])
 
         if (categoriesRes.success) {
-          setCategories(categoriesRes.data)
+          setCategories(categoriesRes.data ?? [])
         }
         if (productsRes.success) {
-          setProducts(productsRes.data)
+          setProducts(productsRes.data ?? [])
           setPagination(productsRes.pagination)
         }
         if (wishlistRes.success) {
-          setWishlistItems(wishlistRes.data)
+          setWishlistItems(wishlistRes.data ?? [])
         }
       } catch (error) {
         console.error('[v0] Error loading catalog:', error)

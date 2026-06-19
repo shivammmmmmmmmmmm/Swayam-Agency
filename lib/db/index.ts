@@ -1,12 +1,11 @@
 import { drizzle } from 'drizzle-orm/better-sqlite3'
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
-import type Database from 'better-sqlite3'
 import * as schema from './schema'
 import path from 'path'
 import fs from 'fs'
 
 let _db: BetterSQLite3Database<typeof schema> | null = null
-let _sqlite: Database | null = null
+let _sqlite: import('better-sqlite3').Database | null = null
 
 function getDbPath(): string {
   if (process.env.VERCEL) {
@@ -42,13 +41,18 @@ export function getDb(): BetterSQLite3Database<typeof schema> {
   sqliteDb.pragma('journal_mode = WAL')
   sqliteDb.pragma('foreign_keys = ON')
 
+  const userColumns = sqliteDb.prepare('pragma table_info(user)').all() as Array<{ name: string }>
+  if (!userColumns.some((column) => column.name === 'role')) {
+    sqliteDb.prepare("alter table user add column role text not null default 'user'").run()
+  }
+
   _sqlite = sqliteDb
   _db = drizzle(sqliteDb, { schema })
 
   return _db
 }
 
-export function getSqlite(): Database | null {
+export function getSqlite(): import('better-sqlite3').Database | null {
   if (!_sqlite) getDb()
   return _sqlite
 }
@@ -61,4 +65,3 @@ export function closeDb() {
     _db = null
   }
 }
-

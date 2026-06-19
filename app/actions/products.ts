@@ -33,8 +33,6 @@ export async function getProducts(
     const pageSize = 12
     const offset = (page - 1) * pageSize
 
-    let query = db.select().from(products)
-
     const conditions = []
     if (categoryId) {
       conditions.push(eq(products.categoryId, categoryId))
@@ -43,11 +41,12 @@ export async function getProducts(
       conditions.push(ilike(products.name, `%${searchQuery}%`))
     }
 
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions))
-    }
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined
 
-    const result = await query
+    const result = await (whereClause
+      ? db.select().from(products).where(whereClause)
+      : db.select().from(products)
+    )
       .orderBy(desc(products.featured), desc(products.createdAt))
       .limit(pageSize)
       .offset(offset)
@@ -55,7 +54,7 @@ export async function getProducts(
     const totalCountResult = await db
       .select({ count: products.id })
       .from(products)
-      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .where(whereClause)
 
     const totalCount = totalCountResult[0]?.count || 0
 

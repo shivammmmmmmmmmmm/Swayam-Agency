@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import { motion } from 'framer-motion'
+import { DUMMY_ADMIN_EMAIL } from '@/lib/admin'
 
 export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
   const router = useRouter()
@@ -24,38 +25,41 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
     e.preventDefault()
     setError(null)
     setLoading(true)
+    const normalizedEmail = email.trim().toLowerCase()
 
-    const result = isSignUp
-      ? await authClient.signUp.email({ email, password, name })
-      : await authClient.signIn.email({ email, password })
+    try {
+      const result = isSignUp
+        ? await authClient.signUp.email({ email: normalizedEmail, password, name })
+        : await authClient.signIn.email({ email: normalizedEmail, password })
 
-    const { error } = result
+      const { error } = result
 
+      if (error) {
+        const details =
+          // better-auth errors often include more than just message
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (error as any)?.code ||
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (error as any)?.cause ||
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (error as any)?.status
 
-    setLoading(false)
+        const action = isSignUp ? 'create account' : 'sign in'
+        setError(
+          details
+            ? `Unable to ${action}: ${error.message ?? 'Please check your details'} (${String(details)})`
+            : `Unable to ${action}: ${error.message ?? 'Please check your details'}`
+        )
+        return
+      }
 
-    if (error) {
-      const details =
-        // better-auth errors often include more than just message
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (error as any)?.code ||
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (error as any)?.cause ||
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (error as any)?.status
-
-      setError(
-        details
-          ? `Unable to create account: ${error.message ?? 'Something went wrong'} (${String(details)})`
-          : `Unable to create account: ${error.message ?? 'Something went wrong'}`
-      )
-      console.error('AuthForm error:', error)
-      return
+      router.push(normalizedEmail === DUMMY_ADMIN_EMAIL ? '/admin' : '/')
+      router.refresh()
+    } catch {
+      setError('Unable to connect to authentication. Please try again.')
+    } finally {
+      setLoading(false)
     }
-
-
-    router.push('/')
-    router.refresh()
   }
 
   return (

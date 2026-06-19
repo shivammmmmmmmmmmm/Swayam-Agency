@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { authClient } from '@/lib/auth-client'
 import { useEffect, useState } from 'react'
-import { Heart, ShoppingCart, LogOut, LogIn, Menu, X, Search, UserRound, Phone, MessageCircle, Stethoscope, ShoppingBag } from 'lucide-react'
+import { Heart, ShoppingCart, LogOut, LogIn, Menu, X, Search, UserRound, Phone, MessageCircle, Stethoscope, ShoppingBag, Shield } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const WHATSAPP_LINK = 'https://wa.me/919890509712?text=Hi%20Swayam%20Agency!%20I%20want%20to%20inquire%20about%20medical%20equipment.'
@@ -17,6 +17,7 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [cartCount, setCartCount] = useState(0)
   const [scrolled, setScrolled] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
@@ -26,6 +27,16 @@ export function Header() {
       try {
         const { data } = await authClient.getSession()
         setSession(data)
+        // Check if user is admin
+        if (data?.user) {
+          try {
+            const adminRes = await fetch('/api/admin/check')
+            const adminData = await adminRes.json()
+            setIsAdmin(adminData.isAdmin)
+          } catch {
+            setIsAdmin(false)
+          }
+        }
       } catch (error) {
         setSession(null)
       } finally {
@@ -230,6 +241,12 @@ export function Header() {
                           <ShoppingBag className="h-4 w-4" />
                           My Orders
                         </Link>
+                        {isAdmin && (
+                          <Link href="/admin" className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-purple-700 transition hover:bg-purple-50 hover:text-purple-600">
+                            <Shield className="h-4 w-4" />
+                            Admin Panel
+                          </Link>
+                        )}
                         <button onClick={handleLogout} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50">
                           <LogOut className="h-4 w-4" />
                           Sign Out
