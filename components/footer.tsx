@@ -72,19 +72,19 @@ export function Footer() {
             <div className="space-y-3 text-sm font-semibold text-slate-600">
               <div className="flex items-start gap-2">
                 <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
-                <span>Shop No. 1, House No. 5, Gawali Nagar, Nanded Road, Latur</span>
+                <div>
+                  <p><span className="font-bold">Corporate Office:</span> Shewalewadi, Pune</p>
+                  <p className="mt-1"><span className="font-bold">Branch Office:</span> Shop No. 1, House No. 5, Gawali Nagar, Nanded Road, Latur</p>
+                  <p className="mt-1"><span className="font-bold">Manufacturing unit:</span> Delhi</p>
+                </div>
               </div>
               <a href="tel:+919890509712" className="flex items-center gap-2 transition hover:text-primary">
                 <Phone className="h-4 w-4 text-primary" />
                 +91 9890509712
               </a>
-              <a href="mailto:swayam.agency1870@gmail.com" className="flex items-center gap-2 transition hover:text-primary">
+              <a href="mailto:sales@swayamagency.in" className="flex items-center gap-2 transition hover:text-primary">
                 <Mail className="h-4 w-4 text-primary" />
-                swayam.agency1870@gmail.com
-              </a>
-              <a href="https://swayamagency.link" target="_blank" className="flex items-center gap-2 transition hover:text-primary">
-                <Globe className="h-4 w-4 text-primary" />
-                swayamagency.link
+                sales@swayamagency.in
               </a>
             </div>
           </div>

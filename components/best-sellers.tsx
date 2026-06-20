@@ -70,7 +70,13 @@ const bestSellers = [
 export function BestSellers() {
   return (
     <section className="relative bg-gradient-to-b from-white to-gray-50 py-16 md:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div
+        className="absolute inset-0 bg-cover bg-center opacity-30"
+        style={{ backgroundImage: "url('/OIP (1).jpg')" }}
+        aria-hidden="true"
+      />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

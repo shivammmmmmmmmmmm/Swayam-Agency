@@ -68,7 +68,12 @@ const itemVariants = {
 
 export function CategoryShowcase() {
   return (
-    <section id="categories" className="relative overflow-hidden bg-white py-16 md:py-24">
+    <section id="categories" className="relative overflow-hidden bg-sky-50 py-16 md:py-24">
+      <div
+        className="absolute inset-0 bg-cover bg-center opacity-100"
+        style={{ backgroundImage: "url('/3e140ba14ab9cbf050fddc83f4075c87.jpg')" }}
+        aria-hidden="true"
+      />
       {/* Medical background pattern */}
       <div className="absolute inset-0 opacity-[0.03]" 
         style={{ 
@@ -78,7 +83,7 @@ export function CategoryShowcase() {
           backgroundAttachment: 'fixed'
         }} 
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/98 to-white/95" />
+      <div className="absolute inset-0 bg-gradient-to-b from-sky-50/80 via-sky-50/60 to-sky-50/80" />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div

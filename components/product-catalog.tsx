@@ -57,7 +57,7 @@ export function ProductCatalog() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-sky-50">
       <section className="relative overflow-hidden bg-[linear-gradient(135deg,#2563EB,#4F46E5)] text-white">
         <div className="absolute inset-0 opacity-25 [background-image:radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.35),transparent_28%),radial-gradient(circle_at_80%_10%,rgba(255,255,255,0.22),transparent_24%),linear-gradient(rgba(255,255,255,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.10)_1px,transparent_1px)] [background-size:auto,auto,48px_48px,48px_48px]" />
         <div className="relative mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:px-8 lg:py-20">
@@ -112,7 +112,7 @@ export function ProductCatalog() {
         </div>
       </section>
 
-      <section className="border-b border-border bg-white">
+      <section className="border-b border-border bg-sky-50">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 py-5 sm:px-6 md:grid-cols-3 lg:px-8">
           {[
             { icon: ShieldCheck, title: 'Verified suppliers', text: 'Business-grade procurement support' },
@@ -130,7 +130,7 @@ export function ProductCatalog() {
         </div>
       </section>
 
-      <div id="products" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <div id="products" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 bg-sky-50">
         <div className="flex gap-6">
           <aside className="hidden w-64 flex-shrink-0 lg:block">
             <div className="enterprise-card sticky top-24 p-4">
