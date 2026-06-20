@@ -1,7 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { mkdir, readFile } from 'fs/promises'
 import path from 'path'
-import { lookup } from 'mime-types'
+function getMimeTypeByExtension(filename: string) {
+  const ext = filename.split('.').pop()?.toLowerCase()
+  switch (ext) {
+    case 'jpg':
+    case 'jpeg':
+      return 'image/jpeg'
+    case 'png':
+      return 'image/png'
+    case 'webp':
+      return 'image/webp'
+    default:
+      return 'application/octet-stream'
+  }
+}
 
 export async function GET(
   _request: NextRequest,
@@ -20,7 +33,7 @@ export async function GET(
 
   try {
     const buf = await readFile(filePath)
-    const mime = (lookup(filePath) || 'application/octet-stream') as string
+    const mime = getMimeTypeByExtension(filename)
 
     return new NextResponse(buf, {
       headers: {
