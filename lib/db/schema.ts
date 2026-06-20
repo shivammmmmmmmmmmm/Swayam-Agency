@@ -1,9 +1,7 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core'
-import { index } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, integer, real, index, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
 
 // --- Better Auth required tables -------------------------------------------
-// Column names are camelCase to match Better Auth's defaults. Do not rename.
 
 export const user = sqliteTable('user', {
   id: text('id').primaryKey(),
@@ -56,9 +54,8 @@ export const verification = sqliteTable('verification', {
   updatedAt: integer('updatedAt', { mode: 'timestamp' }).default(sql`(unixepoch())`),
 })
 
-// --- App tables for Swayam Agency E-Commerce --------------------------------
+// --- App tables -------------------------------------------------------------
 
-// Categories for medical instruments
 export const categories = sqliteTable('categories', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
@@ -67,10 +64,9 @@ export const categories = sqliteTable('categories', {
   slug: text('slug').notNull().unique(),
   createdAt: integer('createdAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 }, (table) => ({
-  slugIdx: index('categories_slug_idx').on(table.slug),
+  slugIdx: uniqueIndex('categories_slug_idx').on(table.slug),
 }))
 
-// Products - medical instruments
 export const products = sqliteTable('products', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
@@ -86,10 +82,9 @@ export const products = sqliteTable('products', {
   updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 }, (table) => ({
   categoryIdIdx: index('products_category_id_idx').on(table.categoryId),
-  slugIdx: index('products_slug_idx').on(table.slug),
+  slugIdx: uniqueIndex('products_slug_idx').on(table.slug),
 }))
 
-// Wishlist
 export const wishlist = sqliteTable('wishlist', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   userId: text('userId').notNull(),
@@ -100,7 +95,6 @@ export const wishlist = sqliteTable('wishlist', {
   productIdIdx: index('wishlist_product_id_idx').on(table.productId),
 }))
 
-// Addresses
 export const addresses = sqliteTable('addresses', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   userId: text('userId').notNull(),
@@ -118,13 +112,12 @@ export const addresses = sqliteTable('addresses', {
   userIdIdx: index('addresses_user_id_idx').on(table.userId),
 }))
 
-// Orders
 export const orders = sqliteTable('orders', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   userId: text('userId').notNull(),
   orderNumber: text('orderNumber').notNull().unique(),
   status: text('status').notNull().default('pending'),
-  paymentMethod: text('paymentMethod').notNull(), // 'stripe' or 'cod'
+  paymentMethod: text('paymentMethod').notNull(),
   paymentStatus: text('paymentStatus').notNull().default('pending'),
   totalAmount: real('totalAmount').notNull(),
   taxAmount: real('taxAmount').notNull().default(0),
@@ -139,10 +132,9 @@ export const orders = sqliteTable('orders', {
 }, (table) => ({
   userIdIdx: index('orders_user_id_idx').on(table.userId),
   statusIdx: index('orders_status_idx').on(table.status),
-  orderNumberIdx: index('orders_order_number_idx').on(table.orderNumber),
+  orderNumberIdx: uniqueIndex('orders_order_number_idx').on(table.orderNumber),
 }))
 
-// Order Items
 export const orderItems = sqliteTable('orderItems', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   orderId: integer('orderId').notNull(),
@@ -155,7 +147,6 @@ export const orderItems = sqliteTable('orderItems', {
   productIdIdx: index('order_items_product_id_idx').on(table.productId),
 }))
 
-// Inventory tracking for stock alerts
 export const inventory = sqliteTable('inventory', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   productId: integer('productId').notNull().unique(),

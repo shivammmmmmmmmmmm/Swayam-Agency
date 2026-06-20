@@ -6,9 +6,8 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Prevent Vercel from bundling better-sqlite3 during build.
-  // The native addon is loaded lazily at runtime via dynamic import
-  // inside lib/db/index.ts and lib/auth.ts.
+  // better-sqlite3 is a native Node addon — must not be bundled by webpack.
+  // Vercel loads it at runtime from the project's node_modules.
   serverExternalPackages: ['better-sqlite3'],
 }
 

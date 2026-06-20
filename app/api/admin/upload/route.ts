@@ -3,10 +3,7 @@ import { getAuthInstance } from '@/lib/auth'
 import { getDb } from '@/lib/db'
 import { user } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
-import { randomUUID } from 'crypto'
-import { mkdir, writeFile } from 'fs/promises'
 import { NextRequest, NextResponse } from 'next/server'
-import path from 'path'
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024
 const ALLOWED_IMAGE_TYPES = new Map([
@@ -44,8 +41,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Image file is required' }, { status: 400 })
     }
 
-    const extension = ALLOWED_IMAGE_TYPES.get(file.type)
-    if (!extension) {
+    if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
       return NextResponse.json({ error: 'Only JPG, PNG, and WebP images are allowed' }, { status: 400 })
     }
 
@@ -53,18 +49,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Image must be 5MB or smaller' }, { status: 400 })
     }
 
-    // In serverless/read-only environments, `public/` may be mounted read-only (EROFS).
-    // Write to a writable temp folder first.
-    const tmpDir = path.join(process.cwd(), '.tmp', 'uploads', 'products')
-    await mkdir(tmpDir, { recursive: true })
-
-    const filename = `${Date.now()}-${randomUUID()}.${extension}`
     const bytes = await file.arrayBuffer()
-    const tmpPath = path.join(tmpDir, filename)
-    await writeFile(tmpPath, Buffer.from(bytes))
+    const base64 = Buffer.from(bytes).toString('base64')
+    const dataUrl = `data:${file.type};base64,${base64}`
 
-    // Serve the uploaded file via a Next API route.
-    return NextResponse.json({ url: `/api/admin/upload/temp/${filename}` })
+    return NextResponse.json({ url: dataUrl })
   } catch (error) {
     console.error('Product image upload failed:', error)
     return NextResponse.json({ error: 'Failed to upload image' }, { status: 500 })
