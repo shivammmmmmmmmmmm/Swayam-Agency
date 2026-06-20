@@ -53,14 +53,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Image must be 5MB or smaller' }, { status: 400 })
     }
 
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'products')
-    await mkdir(uploadDir, { recursive: true })
+    // In serverless/read-only environments, `public/` may be mounted read-only (EROFS).
+    // Write to a writable temp folder first.
+    const tmpDir = path.join(process.cwd(), '.tmp', 'uploads', 'products')
+    await mkdir(tmpDir, { recursive: true })
 
     const filename = `${Date.now()}-${randomUUID()}.${extension}`
     const bytes = await file.arrayBuffer()
-    await writeFile(path.join(uploadDir, filename), Buffer.from(bytes))
+    const tmpPath = path.join(tmpDir, filename)
+    await writeFile(tmpPath, Buffer.from(bytes))
 
-    return NextResponse.json({ url: `/uploads/products/${filename}` })
+    // Serve the uploaded file via a Next API route.
+    return NextResponse.json({ url: `/api/admin/upload/temp/${filename}` })
   } catch (error) {
     console.error('Product image upload failed:', error)
     return NextResponse.json({ error: 'Failed to upload image' }, { status: 500 })

@@ -1,9 +1,7 @@
-# TODO - Demo signup allow everyone
+## TODO - Fix “Failed to upload image”
 
-- [x] Update `components/auth-form.tsx` to show full signup/signin error details.
-
-- [x] Update `lib/auth.ts` to enforce demo mode signup allowance (env-driven, default true in dev) and improve server-side logging.
-
-- [ ] Re-test: open `/sign-up`, create a new account, confirm redirect to `/` and session created.
-- [ ] If signup still fails: inspect server logs to determine missing migrations/tables or DB schema mismatch, then update `lib/db/schema.ts` / migration strategy.
+- [ ] Add robust upload path resolution so it always writes inside the project directory.
+- [ ] Prevent hard failures on platforms where the filesystem is read-only; optionally log a clearer error.
+- [ ] Update `app/api/admin/upload/route.ts` to use an absolute path based on the project root.
+- [ ] Re-test admin product image upload from the UI.
 
