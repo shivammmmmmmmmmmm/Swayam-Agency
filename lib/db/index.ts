@@ -1,61 +1,41 @@
-import { drizzle } from 'drizzle-orm/better-sqlite3'
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
+import { drizzle } from 'drizzle-orm/node-postgres'
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
+import { Pool } from 'pg'
 import * as schema from './schema'
-import path from 'path'
-import fs from 'fs'
 
-let _db: BetterSQLite3Database<typeof schema> | null = null
-let _sqlite: import('better-sqlite3').Database | null = null
+let _db: NodePgDatabase<typeof schema> | null = null
+let _pool: Pool | null = null
 
-function getDbPath(): string {
-  // On Vercel the project root (/var/task) is read-only.
-  // /tmp is the only writable directory — use it there.
-  if (process.env.VERCEL) {
-    return '/tmp/swayam.db'
+function getConnectionString(): string {
+  const url = process.env.POSTGRES_URL || process.env.DATABASE_URL
+  if (!url) {
+    throw new Error(
+      'POSTGRES_URL environment variable is not set. ' +
+      'Add it from your Vercel project Storage tab.'
+    )
   }
-  return path.join(process.cwd(), 'swayam.db')
+  return url
 }
 
-export function getDb(): BetterSQLite3Database<typeof schema> {
+export function getDb(): NodePgDatabase<typeof schema> {
   if (_db) return _db
 
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const BetterSqlite3 = require('better-sqlite3') as typeof import('better-sqlite3')
-  const sqliteDbPath = getDbPath()
+  const connectionString = getConnectionString()
 
-  // On Vercel: copy the bundled DB from the read-only project root into /tmp
-  // so we have a writable copy. Only copy if it doesn't already exist in /tmp.
-  if (process.env.VERCEL && !fs.existsSync(sqliteDbPath)) {
-    const source = path.join(process.cwd(), 'swayam.db')
-    if (fs.existsSync(source)) {
-      fs.copyFileSync(source, sqliteDbPath)
-    }
-  }
+  _pool = new Pool({
+    connectionString,
+    ssl: connectionString.includes('localhost') ? false : { rejectUnauthorized: false },
+    max: 5,
+  })
 
-  const sqliteDb = new BetterSqlite3(sqliteDbPath)
-  sqliteDb.pragma('journal_mode = WAL')
-  sqliteDb.pragma('foreign_keys = ON')
-
-  // Add role column if missing (safe migration)
-  const userColumns = sqliteDb.prepare('pragma table_info(user)').all() as Array<{ name: string }>
-  if (!userColumns.some((col) => col.name === 'role')) {
-    sqliteDb.prepare("alter table user add column role text not null default 'user'").run()
-  }
-
-  _sqlite = sqliteDb
-  _db = drizzle(sqliteDb, { schema })
+  _db = drizzle(_pool, { schema })
   return _db
 }
 
-export function getSqlite(): import('better-sqlite3').Database | null {
-  if (!_sqlite) getDb()
-  return _sqlite
-}
-
-export function closeDb() {
-  if (_sqlite) {
-    ;(_sqlite as any).close()
-    _sqlite = null
+export async function closeDb() {
+  if (_pool) {
+    await _pool.end()
+    _pool = null
     _db = null
   }
 }

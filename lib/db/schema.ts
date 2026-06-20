@@ -1,25 +1,34 @@
-import { sqliteTable, text, integer, real, index, uniqueIndex } from 'drizzle-orm/sqlite-core'
-import { sql } from 'drizzle-orm'
+import {
+  pgTable,
+  text,
+  integer,
+  serial,
+  boolean,
+  timestamp,
+  real,
+  index,
+  uniqueIndex,
+} from 'drizzle-orm/pg-core'
 
 // --- Better Auth required tables -------------------------------------------
 
-export const user = sqliteTable('user', {
+export const user = pgTable('user', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   email: text('email').notNull().unique(),
-  emailVerified: integer('emailVerified', { mode: 'boolean' }).notNull().default(false),
+  emailVerified: boolean('emailVerified').notNull().default(false),
   image: text('image'),
   role: text('role').notNull().default('user'),
-  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
-  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
 })
 
-export const session = sqliteTable('session', {
+export const session = pgTable('session', {
   id: text('id').primaryKey(),
-  expiresAt: integer('expiresAt', { mode: 'timestamp' }).notNull(),
+  expiresAt: timestamp('expiresAt').notNull(),
   token: text('token').notNull().unique(),
-  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
-  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
   ipAddress: text('ipAddress'),
   userAgent: text('userAgent'),
   userId: text('userId')
@@ -27,7 +36,7 @@ export const session = sqliteTable('session', {
     .references(() => user.id, { onDelete: 'cascade' }),
 })
 
-export const account = sqliteTable('account', {
+export const account = pgTable('account', {
   id: text('id').primaryKey(),
   accountId: text('accountId').notNull(),
   providerId: text('providerId').notNull(),
@@ -37,38 +46,38 @@ export const account = sqliteTable('account', {
   accessToken: text('accessToken'),
   refreshToken: text('refreshToken'),
   idToken: text('idToken'),
-  accessTokenExpiresAt: integer('accessTokenExpiresAt', { mode: 'timestamp' }),
-  refreshTokenExpiresAt: integer('refreshTokenExpiresAt', { mode: 'timestamp' }),
+  accessTokenExpiresAt: timestamp('accessTokenExpiresAt'),
+  refreshTokenExpiresAt: timestamp('refreshTokenExpiresAt'),
   scope: text('scope'),
   password: text('password'),
-  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
-  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
 })
 
-export const verification = sqliteTable('verification', {
+export const verification = pgTable('verification', {
   id: text('id').primaryKey(),
   identifier: text('identifier').notNull(),
   value: text('value').notNull(),
-  expiresAt: integer('expiresAt', { mode: 'timestamp' }).notNull(),
-  createdAt: integer('createdAt', { mode: 'timestamp' }).default(sql`(unixepoch())`),
-  updatedAt: integer('updatedAt', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+  expiresAt: timestamp('expiresAt').notNull(),
+  createdAt: timestamp('createdAt').defaultNow(),
+  updatedAt: timestamp('updatedAt').defaultNow(),
 })
 
 // --- App tables -------------------------------------------------------------
 
-export const categories = sqliteTable('categories', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+export const categories = pgTable('categories', {
+  id: serial('id').primaryKey(),
   name: text('name').notNull(),
   description: text('description'),
   image: text('image'),
   slug: text('slug').notNull().unique(),
-  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
 }, (table) => ({
   slugIdx: uniqueIndex('categories_slug_idx').on(table.slug),
 }))
 
-export const products = sqliteTable('products', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+export const products = pgTable('products', {
+  id: serial('id').primaryKey(),
   name: text('name').notNull(),
   description: text('description'),
   categoryId: integer('categoryId').notNull(),
@@ -77,26 +86,26 @@ export const products = sqliteTable('products', {
   image: text('image'),
   specification: text('specification'),
   slug: text('slug').notNull().unique(),
-  featured: integer('featured', { mode: 'boolean' }).notNull().default(false),
-  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
-  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  featured: boolean('featured').notNull().default(false),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
 }, (table) => ({
   categoryIdIdx: index('products_category_id_idx').on(table.categoryId),
   slugIdx: uniqueIndex('products_slug_idx').on(table.slug),
 }))
 
-export const wishlist = sqliteTable('wishlist', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+export const wishlist = pgTable('wishlist', {
+  id: serial('id').primaryKey(),
   userId: text('userId').notNull(),
   productId: integer('productId').notNull(),
-  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
 }, (table) => ({
   userIdIdx: index('wishlist_user_id_idx').on(table.userId),
   productIdIdx: index('wishlist_product_id_idx').on(table.productId),
 }))
 
-export const addresses = sqliteTable('addresses', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+export const addresses = pgTable('addresses', {
+  id: serial('id').primaryKey(),
   userId: text('userId').notNull(),
   fullName: text('fullName').notNull(),
   phone: text('phone').notNull(),
@@ -105,15 +114,15 @@ export const addresses = sqliteTable('addresses', {
   state: text('state').notNull(),
   postalCode: text('postalCode').notNull(),
   country: text('country').notNull().default('India'),
-  isDefault: integer('isDefault', { mode: 'boolean' }).notNull().default(false),
-  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
-  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  isDefault: boolean('isDefault').notNull().default(false),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
 }, (table) => ({
   userIdIdx: index('addresses_user_id_idx').on(table.userId),
 }))
 
-export const orders = sqliteTable('orders', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+export const orders = pgTable('orders', {
+  id: serial('id').primaryKey(),
   userId: text('userId').notNull(),
   orderNumber: text('orderNumber').notNull().unique(),
   status: text('status').notNull().default('pending'),
@@ -125,36 +134,36 @@ export const orders = sqliteTable('orders', {
   addressId: integer('addressId').notNull(),
   notes: text('notes'),
   stripeSessionId: text('stripeSessionId'),
-  whatsappSent: integer('whatsappSent', { mode: 'boolean' }).notNull().default(false),
-  whatsappAdminSent: integer('whatsappAdminSent', { mode: 'boolean' }).notNull().default(false),
-  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
-  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  whatsappSent: boolean('whatsappSent').notNull().default(false),
+  whatsappAdminSent: boolean('whatsappAdminSent').notNull().default(false),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
 }, (table) => ({
   userIdIdx: index('orders_user_id_idx').on(table.userId),
   statusIdx: index('orders_status_idx').on(table.status),
   orderNumberIdx: uniqueIndex('orders_order_number_idx').on(table.orderNumber),
 }))
 
-export const orderItems = sqliteTable('orderItems', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+export const orderItems = pgTable('orderItems', {
+  id: serial('id').primaryKey(),
   orderId: integer('orderId').notNull(),
   productId: integer('productId').notNull(),
   quantity: integer('quantity').notNull(),
   price: real('price').notNull(),
-  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
 }, (table) => ({
   orderIdIdx: index('order_items_order_id_idx').on(table.orderId),
   productIdIdx: index('order_items_product_id_idx').on(table.productId),
 }))
 
-export const inventory = sqliteTable('inventory', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+export const inventory = pgTable('inventory', {
+  id: serial('id').primaryKey(),
   productId: integer('productId').notNull().unique(),
   currentStock: integer('currentStock').notNull().default(0),
   lowStockThreshold: integer('lowStockThreshold').notNull().default(10),
   reorderQuantity: integer('reorderQuantity').notNull().default(50),
-  lastRestockDate: integer('lastRestockDate', { mode: 'timestamp' }),
-  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  lastRestockDate: timestamp('lastRestockDate'),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
 }, (table) => ({
   productIdIdx: index('inventory_product_id_idx').on(table.productId),
 }))

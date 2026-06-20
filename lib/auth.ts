@@ -1,8 +1,5 @@
 import { betterAuth } from 'better-auth'
 
-const DEMO_ALLOW_SIGNUP =
-  process.env.DEMO_ALLOW_SIGNUP === 'true' || process.env.NODE_ENV === 'development'
-
 export async function createAuth() {
   const { drizzleAdapter } = await import('better-auth/adapters/drizzle')
   const { getDb } = await import('@/lib/db')
@@ -10,7 +7,7 @@ export async function createAuth() {
 
   return betterAuth({
     database: drizzleAdapter(getDb(), {
-      provider: 'sqlite',
+      provider: 'pg',
       schema,
     }),
 
